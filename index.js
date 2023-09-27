@@ -1,48 +1,50 @@
-const fs = require('fs');
-const inquirer = require('inquirer');
-const SVG = require('svg.js');
+const inquirer = import('inquirer');
+const fs = import('fs');
+const svg = import('svg.js')
 
-async function generateLogo() {
-  try {
-    const userInput = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'color',
-        message: 'Select a color for your logo:',
-        choices: ['red', 'green', 'blue', 'yellow'],
-      },
-      {
-        type: 'list',
-        name: 'shape',
-        message: 'Select a shape for your logo:',
-        choices: ['circle', 'square', 'triangle'],
-      },
-      {
+
+const createShape = [
+    {
         type: 'input',
+        message: 'Enter Up to 3 characters:',
         name: 'text',
-        message: 'Enter text for your logo:',
-      },
-      {
+        validate: function(value) {
+            if (value.length > 3) {
+                return "Input must be 3 characters or less!"
+            }
+            else {
+                return true
+            }
+        }
+    },
+    {
         type: 'input',
-        name: 'filename',
-        message: 'Enter a filename for the SVG file (e.g., logo.svg):',
-        default: 'logo.svg',
-      },
-    ]);
+        message: 'Enter text color:',
+        name: 'textColor'
+    },
+    {
+        type: 'input',
+        message: 'Enter shape color:',
+        name: 'shapeColor'
+    },
+    {
+        type: 'list',
+        message: 'Enter shape:',
+        choices: ['circle', 'triangle', 'square'],
+        name: 'shape'
+    }
+];
 
-    const { color, shape, text, filename } = userInput;
+inquirer.prompt(questions)
+    {
+            const dataToWrite = createShape(response);
+            writeToFile('logo', dataToWrite);
+    }
+    
+function writeToFile(name, data) {
 
-    const draw = SVG(filename).size(200, 200);
-    const shapeElement = draw.shape(shape).fill(color);
-    const textElement = draw.text(text).move(20, 150).font({ size: 30, fill: 'white' });
+    fs.writeFile(`./examples/${name}.svg`, data, err => err ? console.error(err) : console.log('Generated logo.svg!'));
 
-    draw.link(shapeElement, textElement);
-
-    fs.writeFileSync(filename, draw.svg());
-    console.log(`Logo saved as ${filename}`);
-  } catch (error) {
-    console.error('An error occurred:', error);
-  }
 }
 
-generateLogo();
+
